@@ -48,7 +48,15 @@ ui <- fluidPage(
                                  tableOutput("wants_table"))
                           )
                           
-                        )))))
+                        ))),
+             
+             tabPanel("Data",
+                      
+                      fluidPage(
+                        mainPanel(
+                          DTOutput("data_edited")
+                        
+                          )))))
 
 
 ################################################################################
@@ -67,11 +75,46 @@ server <- function(input,output) {
       select(time, payee, transaction_type, description, up_category = category, total = total_aud) %>%
       mutate(category = case_when(
         transaction_type == "Salary" ~ "Income",
-        up_category %in% c("Groceries", "Rent & Mortgage", "Rates & Insurance", "Utilities", "Public transport", "Car Insurance, Rego & Maintenance") ~ "Need",
+        up_category %in% c("Groceries", "Rent & Mortgage", "Rates & Insurance", "Utilities", "Public Transport", "Car Insurance, Rego & Maintenance") ~ "Need",
         TRUE ~ "Want"
       ))
   })
   
+  ##############################################################################
+  ############################### DATA OUTPUTS #################################
+  ##############################################################################
+  
+  # CREATING DATA TABLE FROM UPLOADED DATA
+  
+  output$data_edited <- renderDT({
+    if (!is.null(data())) {
+      datatable(data(), options = list(pageLength = 10), editable = TRUE)
+    }
+  })
+  
+  # ALLOWING EDITS I MAKE IN THIS TAB TO BE REFLECT IN OVERVIEW TAB
+  
+  rv <- reactiveValues(data_edited = NULL)
+  
+  observeEvent(input$data_edited_cell_edit, {
+    info = input$data_edited_cell_edit
+    str(info)
+    modified_data <- rv$data_edited
+    modified_data[info$row, info$col] <- info$value
+    rv$data_edited <- modified_data
+  })
+  
+  observe({
+    if (!is.null(data())) {
+      rv$data_edited <- data()
+    }
+  })
+  
+  output$data_edited <- renderDT({
+    if (!is.null(rv$data_edited)) {
+      datatable(rv$data_edited, options = list(pageLength = 10), editable = TRUE)
+    }
+  })
   
   ##############################################################################
   ############################### OVERVIEW OUTPUTS #############################
@@ -85,17 +128,17 @@ server <- function(input,output) {
   # CHART DATA
   
   chart_data <- reactive({
-    income <- data() %>% 
+    income <- rv$data_edited %>% 
       filter(category == "Income") %>% 
       summarise(income = sum(total)) %>% 
       pull(income)
     
-    needs <- data() %>% 
+    needs <- rv$data_edited %>% 
       filter(category == "Need") %>% 
       summarise(needs = sum(total) * -1) %>% 
       pull(needs)
     
-    wants <- data() %>% 
+    wants <- rv$data_edited %>% 
       filter(category == "Want") %>% 
       summarise(wants = sum(total) * -1) %>% 
       pull(wants)
@@ -123,7 +166,7 @@ server <- function(input,output) {
   
   output$needs_table <- renderTable({
     
-    needs_table_data <- data() %>% 
+    needs_table_data <- rv$data_edited %>% 
       filter(category == "Need") %>% 
       group_by_(input$summary_column) %>% 
       summarise(total = sum(total)) %>% 
@@ -141,7 +184,7 @@ server <- function(input,output) {
   
   output$wants_table <- renderTable({
   
-    wants_table_data <- data() %>% 
+    wants_table_data <- rv$data_edited %>% 
       filter(category == "Want") %>% 
       group_by_(input$summary_column) %>% 
       summarise(total = sum(total)) %>% 

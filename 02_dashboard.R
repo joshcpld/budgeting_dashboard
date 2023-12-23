@@ -2,7 +2,9 @@ library(shinydashboard)
 library(shiny)
 library(tidyverse)
 library(plotly)
+library(janitor)
 library(gt)
+library(DT)
 
 ################################################################################
 ############################## Import data #####################################
@@ -26,15 +28,25 @@ ui <- fluidPage(
                         
                         sidebarPanel(
                           
-                          fileInput("data_upload", "Upload your data")
+                          fileInput("data_upload", "Upload your data"),
+                          selectInput("summary_column", "Summarise data by:",
+                                      choices = c("payee", "up_category"))
                         ),
                         
                         mainPanel(
                           
                           plotlyOutput("spending_share"),
-                          tableOutput("needs_table"),
-                          tableOutput("wants_table")
                           
+                          fluidRow(
+                          
+                          column(6,
+                                 h3("Needs Table"),
+                                 tableOutput("needs_table")),
+                          
+                          column(6,
+                                 h3("Wants Table"),
+                                 tableOutput("wants_table"))
+                          )
                           
                         )))))
 
@@ -59,6 +71,14 @@ server <- function(input,output) {
         TRUE ~ "Want"
       ))
   })
+  
+  
+  ##############################################################################
+  ############################### OVERVIEW OUTPUTS #############################
+  ##############################################################################
+  
+  
+  
   
   ############################### CALC FOR CHART DATA ##########################
   
@@ -105,12 +125,13 @@ server <- function(input,output) {
     
     needs_table_data <- data() %>% 
       filter(category == "Need") %>% 
-      group_by(payee) %>% 
+      group_by_(input$summary_column) %>% 
       summarise(total = sum(total)) %>% 
       arrange(total)
     
     gt_table <- gt(needs_table_data)
     
+    return(gt_table)
     
   })
   
@@ -119,17 +140,21 @@ server <- function(input,output) {
   ##################################### WANTS TABLE ############################
   
   output$wants_table <- renderTable({
-    
+  
     wants_table_data <- data() %>% 
       filter(category == "Want") %>% 
-      group_by(payee) %>% 
+      group_by_(input$summary_column) %>% 
       summarise(total = sum(total)) %>% 
       arrange(total)
     
     gt_table <- gt(wants_table_data)
     
+    return(gt_table)
     
   })
+
+
+
 }
 
 ################################################################################

@@ -68,9 +68,9 @@ needs_table_data <- data %>%
 
 wants_table_data <- data %>% 
   filter(category == "Want") %>% 
-  group_by(up_category, payee) %>% 
+  group_by(payee) %>% 
   summarise(total = sum(total)) %>% 
-  arrange(total,up_category,payee)
+  arrange(total)
 
 
 

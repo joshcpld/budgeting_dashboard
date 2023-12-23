@@ -73,9 +73,11 @@ server <- function(input,output) {
     read_csv(input$data_upload$datapath) %>%
       clean_names() %>%
       select(time, payee, transaction_type, description, up_category = category, total = total_aud) %>%
+      filter(transaction_type != "Transfer") %>% 
       mutate(category = case_when(
         transaction_type == "Salary" ~ "Income",
-        up_category %in% c("Groceries", "Rent & Mortgage", "Rates & Insurance", "Utilities", "Public Transport", "Car Insurance, Rego & Maintenance") ~ "Need",
+        up_category %in% c("Groceries", "Rent & Mortgage", "Rates & Insurance", 
+                           "Utilities", "Public Transport", "Car Insurance, Rego & Maintenance") ~ "Need",
         TRUE ~ "Want"
       ))
   })
@@ -145,7 +147,6 @@ server <- function(input,output) {
     
     data.frame(income, needs, wants) %>% 
       mutate(savings = income - needs - wants) %>%
-      select(-income) %>% 
       pivot_longer(everything()) %>% 
       mutate(share = round(value / income * 100))
   })
@@ -153,7 +154,7 @@ server <- function(input,output) {
   # CHART
   
   output$spending_share <- renderPlotly({
-    p <- ggplot(chart_data(), aes(x = reorder(name, -share), share, fill = name)) + 
+    p <- ggplot(chart_data(), aes(x = reorder(name, -value), value, fill = name)) + 
       geom_col() + 
       theme_minimal() +
       labs(title = "Spending Share")

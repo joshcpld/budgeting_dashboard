@@ -18,6 +18,10 @@ data <- read_csv("2023-10-01.csv") %>%
     TRUE ~ "Want"
   ))
 
+data_test <- data %>% 
+  filter(transaction_type == "Transfer")
+
+
 ################################################################################
 ################################ CHART DATA ####################################
 ################################################################################
@@ -48,9 +52,18 @@ wants <- data %>%
 
 chart_data <- data.frame(income,needs,wants) %>% 
   mutate(savings = income - needs - wants) %>%
-  select(-income) %>% 
   pivot_longer(everything()) %>% 
-  mutate(share = round(value / income * 100))
+  mutate(share = round(value / income * 100)) %>% 
+  mutate(name = as_factor(name)) %>% 
+  mutate(name = fct_relevel(name, c("income", "needs", "wants","savings"))) %>% 
+  arrange(name) %>% 
+  mutate(target_value = case_when(
+    
+    name == "income" ~ NA_real_,
+    name == "needs" ~ income * 0.5,
+    name %in% c("wants", "savings") ~ income * 0.25
+    
+  ))
   
 ggplot(chart_data, aes(x = reorder(name, -share), share, fill = name)) + 
   geom_col() + theme_minimal() 

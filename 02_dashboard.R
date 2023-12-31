@@ -7,12 +7,6 @@ library(gt)
 library(DT)
 
 ################################################################################
-############################## Import data #####################################
-################################################################################
-
-
-
-################################################################################
 ############################## Dashboard UI ####################################
 ################################################################################
 
@@ -40,11 +34,11 @@ ui <- fluidPage(
                           fluidRow(
                           
                           column(6,
-                                 h3("Needs Table"),
+                                 h3("Needs Table", align = "center"),
                                  tableOutput("needs_table")),
                           
                           column(6,
-                                 h3("Wants Table"),
+                                 h3("Wants Table", align = "center"),
                                  tableOutput("wants_table"))
                           )
                           
@@ -73,13 +67,14 @@ server <- function(input,output) {
     read_csv(input$data_upload$datapath) %>%
       clean_names() %>%
       select(time, payee, transaction_type, description, up_category = category, total = total_aud) %>%
-      filter(transaction_type != "Transfer") %>% 
+      filter(!(transaction_type %in% c("Transfer", "Scheduled Transfer"))) %>% 
       mutate(category = case_when(
         transaction_type == "Salary" ~ "Income",
         up_category %in% c("Groceries", "Rent & Mortgage", "Rates & Insurance", 
                            "Utilities", "Public Transport", "Car Insurance, Rego & Maintenance") ~ "Need",
         TRUE ~ "Want"
-      ))
+      )) %>% 
+      mutate(up_category = str_replace_all(up_category, "&", "and"))
   })
   
   ##############################################################################
@@ -148,16 +143,29 @@ server <- function(input,output) {
     data.frame(income, needs, wants) %>% 
       mutate(savings = income - needs - wants) %>%
       pivot_longer(everything()) %>% 
-      mutate(share = round(value / income * 100))
+      mutate(share = round(value / income * 100)) %>% 
+      mutate(name = as_factor(name)) %>% 
+      mutate(name = fct_relevel(name, c("income", "needs", "wants","savings"))) %>% 
+      arrange(name) %>%
+      mutate(target_value = case_when(
+        
+        name == "income" ~ NA_real_,
+        name == "needs" ~ income * 0.5,
+        name %in% c("wants", "savings") ~ income * 0.25
+        
+      ))
   })
   
   # CHART
   
   output$spending_share <- renderPlotly({
-    p <- ggplot(chart_data(), aes(x = reorder(name, -value), value, fill = name)) + 
+    p <- ggplot(chart_data(), aes(x = name, y = value, fill = name)) + 
       geom_col() + 
+      geom_point(aes(x = name, y = target_value), color = "black", size = 3, fill = "black") +
       theme_minimal() +
-      labs(title = "Spending Share")
+      labs(title = "Spending Share",
+           subtitle = "TEST SUBTITLE HERE") +
+      theme(legend.position = "none", plot.title = element_text(hjust = 0.5))
     
     ggplotly(p)
   })

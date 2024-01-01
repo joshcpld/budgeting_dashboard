@@ -163,11 +163,20 @@ server <- function(input,output) {
       geom_col() + 
       geom_point(aes(x = name, y = target_value), color = "black", size = 3, fill = "black") +
       theme_minimal() +
-      labs(title = "Spending Share",
-           subtitle = "TEST SUBTITLE HERE") +
+      labs(x = NULL) +
       theme(legend.position = "none", plot.title = element_text(hjust = 0.5))
     
-    ggplotly(p)
+    p <- ggplotly(p) 
+    p <- layout(p, annotations = list(
+      list(x = 0, y = -0.11, xref = "paper", yref = "paper",
+           text = "Note: dots reflect target values (50:25:25 rule).",
+           showarrow = FALSE,
+           font = list(size = 11),
+           xanchor = "left",
+           yanchor = "bottom")))
+    
+    p
+    
   })
   
   #####################################  NEEDS TABLE ###########################

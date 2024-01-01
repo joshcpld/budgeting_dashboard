@@ -74,7 +74,8 @@ server <- function(input,output) {
                            "Utilities", "Public Transport", "Car Insurance, Rego & Maintenance") ~ "Need",
         TRUE ~ "Want"
       )) %>% 
-      mutate(up_category = str_replace_all(up_category, "&", "and"))
+      mutate(up_category = str_replace_all(up_category, "&", "and")) %>% 
+      mutate(up_category = ifelse(is.na(up_category), "N/A", as.character(up_category)))
   })
   
   ##############################################################################

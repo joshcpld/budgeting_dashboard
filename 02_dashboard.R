@@ -75,7 +75,8 @@ server <- function(input,output) {
         TRUE ~ "Want"
       )) %>% 
       mutate(up_category = str_replace_all(up_category, "&", "and")) %>% 
-      mutate(up_category = ifelse(is.na(up_category), "N/A", as.character(up_category)))
+      mutate(up_category = ifelse(is.na(up_category), "N/A", as.character(up_category))) %>% 
+      mutate(total = round(total,1))
   })
   
   ##############################################################################
@@ -185,10 +186,16 @@ server <- function(input,output) {
   
   output$needs_table <- renderTable({
     
+    income <- rv$data_edited %>% 
+      filter(category == "Income") %>% 
+      summarise(income = sum(total)) %>% 
+      pull(income)
+    
     needs_table_data <- rv$data_edited %>% 
       filter(category == "Need") %>% 
       group_by_(input$summary_column) %>% 
-      summarise(total = sum(total)) %>% 
+      summarise(total = sum(total)) %>%
+      mutate(income_share = round(total / income * 100, 1)) %>%
       arrange(total)
     
     gt_table <- gt(needs_table_data)
@@ -203,10 +210,16 @@ server <- function(input,output) {
   
   output$wants_table <- renderTable({
   
+    income <- rv$data_edited %>% 
+      filter(category == "Income") %>% 
+      summarise(income = sum(total)) %>% 
+      pull(income)
+    
     wants_table_data <- rv$data_edited %>% 
       filter(category == "Want") %>% 
       group_by_(input$summary_column) %>% 
-      summarise(total = sum(total)) %>% 
+      summarise(total = sum(total)) %>%
+      mutate(income_share = round(total / income * 100, 1)) %>%
       arrange(total)
     
     gt_table <- gt(wants_table_data)

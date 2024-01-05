@@ -1,0 +1,12 @@
+name: budgeting_dashboard
+title: budgeting_dashboard
+username: joshcpld
+account: joshcpld
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 10874601
+bundleId: 8113677
+url: https://joshcpld.shinyapps.io/budgeting_dashboard/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

@@ -87,9 +87,16 @@ server <- function(input,output) {
   
   output$data_edited <- renderDT({
     if (!is.null(data())) {
-      datatable(data(), options = list(pageLength = 10), editable = TRUE)
+      datatable(data(), options = list(pageLength = 10),
+                editable = list(target = 'cell', editor = list(select = TRUE)),
+                selection = 'none')
     }
   })
+  
+  
+
+
+
   
   # ALLOWING EDITS I MAKE IN THIS TAB TO BE REFLECT IN OVERVIEW TAB
   
@@ -108,12 +115,13 @@ server <- function(input,output) {
       rv$data_edited <- data()
     }
   })
+  # 
+  # output$data_edited <- renderDT({
+  #   if (!is.null(rv$data_edited)) {
+  #     datatable(rv$data_edited, options = list(pageLength = 10), editable = TRUE)
+  #   }
+  # })
   
-  output$data_edited <- renderDT({
-    if (!is.null(rv$data_edited)) {
-      datatable(rv$data_edited, options = list(pageLength = 10), editable = TRUE)
-    }
-  })
   
   ##############################################################################
   ############################### OVERVIEW OUTPUTS #############################

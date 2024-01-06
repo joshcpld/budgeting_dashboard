@@ -261,6 +261,7 @@ server <- function(input,output) {
           Any edits you make here will be reflected in the chart and tables. <br><br>
          
          Notes: <br>
+         - This dashboard is intended to be an easy way to check if you're adhering to the 50:25:25  personal finance rule (refer here for context: https://www.unfcu.org/financial-wellness/50-30-20-rule/). <br>
          - To be registered as income in this dashboard, a payment needs to be recognised as your salary on Up. <br>
          - Savings are calculated as what's leftover from your income after subtracting needs and wants transcations. This means 
          that transfers from/to other accounts/banks can make the chart look misleading - it's helpful to make these transactions zero

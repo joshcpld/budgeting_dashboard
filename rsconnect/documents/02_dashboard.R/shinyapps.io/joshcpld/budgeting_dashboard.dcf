@@ -5,7 +5,7 @@ account: joshcpld
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 10874601
-bundleId: 8115888
+bundleId: 8115906
 url: https://joshcpld.shinyapps.io/budgeting_dashboard/
 version: 1
 asMultiple: FALSE

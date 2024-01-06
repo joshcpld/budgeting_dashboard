@@ -48,9 +48,17 @@ ui <- fluidPage(
                       
                       fluidPage(
                         mainPanel(
-                          DTOutput("data_edited")
-                        
-                          )))))
+                          DTOutput("data_edited")))),
+             
+             
+             tabPanel("Instructions",
+                      fluidRow(
+                        box(title = "Instructions",
+                            uiOutput("instructions_text"),
+                            solidHeader = TRUE, status = "info"),
+                        # Add other content for Tab 2
+                      )
+             )))
 
 
 ################################################################################
@@ -236,9 +244,35 @@ server <- function(input,output) {
     
   })
 
+  ################################################################################
+  ############################## INSTRUCTIONS ####################################
+  ################################################################################
+  
+  
+  output$instructions_text <- renderText({
+    # Your logic to dynamically generate instructions for Tab 2
 
+    HTML("Step 1: Upload your statement from Up (only data from Up Bank can be used for this dashboard). <br><br>
+    
+    
+         Step 2: Review the chart and tables on the overview page to make sure all transactions seem categorised correctly. <br><br>
+         
+         Step 3: If it looks like there are some errors, find the relevant transactions in the Data tab and edit the payee or up_category columns accordingly by double clicking any cell. 
+          Any edits you make here will be reflected in the chart and tables. <br><br>
+         
+         Notes: <br>
+         - To be registered as income in this dashboard, a payment needs to be recognised as your salary on Up. <br>
+         - Savings are calculated as what's leftover from your income after subtracting needs and wants transcations. This means 
+         that transfers from/to other accounts/banks can make the chart look misleading - it's helpful to make these transactions zero
+          for a true representation of what you've actually spent in a given period.")
+    
+      })
 
 }
+
+
+
+
 
 ################################################################################
 ############################## Deploy dashboard ################################
